@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<body>
+    <h1>index page</h1>
+    <!-- <a href="/second">second로 이동</a> -->
+    <!-- form 태그 시작 -->
+    <form action="/second" method="post">
+        <input type="text" name="id"><br>
+        <input type="password" name="pass"><br>
+        <input type="submit">
+    </form>
+
+    <form action="/data" method="post">
+        <select name="menu">
+            <option value="chicken">치킨</option>
+            <option value="sausage">소세지</option>
+            <option value="potato">감자튀김</option>
+        </select>
+        <input type="submit">
+    </form>
+</body>
+</html>
