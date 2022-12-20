@@ -6,15 +6,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        /* 태그의 이름을 선택하는 경우 */
+        h1 {
+            color : red
+        }
+        p {
+            color : blue
+        }
+        /* id 값을 선택하는 경우 */
+        #content1 {
+            font-size: 25px;
+        }
+        /* class 값을 선택하는 경우 */
+        .container {
+            padding: 30px;
+            background-color: yellow;
+        }
+        .mid {
+            text-align: center;
+        }
+        .b_text {
+            font-weight: bold;
+        }
+    </style>
+
 </head>
 <body>
-    <h1>index page</h1>
+    <h1 class="container mid">index page</h1>
     <!-- <a href="/second">second로 이동</a> -->
     <!-- form 태그 시작 -->
+    <p id="content1" class="b_text container">
+        (서울=연합뉴스) 이재영 기자 = 20일 낮부터 추위가 잠깐 다소 누그러지겠다.
+
+        이날 아침에는 기온이 중부지방 영하 15도에서 영하 10도 사이, 남부지방 영하 10도에서 0도 사이로 강추위가 이어졌다.
+    </p>
+    <p id="content2" class="mid">
+        오전 8시 주요 도시 기온은 서울 영하 9.3도, 인천 영하 8도, 대전 영하 8.5도, 광주 영하 5.2도, 대구 영하 6.7도, 울산 영하 4도, 부산 영하 0.5도다.
+
+        낮 최고기온은 0도에서 영상 9도 사이로 평년기온 수준이겠다.
+    </p>
+    <p id="content3" class="container mid">
+        다만 차가운 대륙고기압 영향이 남아 낮에도 강추위는 아니지만 12월 중순 막바지다운 추위는 이어지겠다.
+    </p>
     <form action="/second" method="post">
-        <input type="text" name="id"><br>
-        <input type="password" name="pass"><br>
-        <input type="submit">
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">ID</span>
+            <input type="text" class="form-control" name="id" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+        </div>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon2">PASSWORD</span>
+            <input type="password" class="form-control" name="pass" placeholder="Username" aria-label="Username" aria-describedby="basic-addon2">
+        </div>
+        <input type="submit" class="btn btn-success">
     </form>
 
     <form action="/data" method="post">
@@ -25,5 +69,35 @@
         </select>
         <input type="submit">
     </form>
+
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">First</th>
+            <th scope="col">Last</th>
+            <th scope="col">Handle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">1</th>
+            <td>Mark</td>
+            <td>Otto</td>
+            <td>@mdo</td>
+          </tr>
+          <tr>
+            <th scope="row">2</th>
+            <td>Jacob</td>
+            <td>Thornton</td>
+            <td>@fat</td>
+          </tr>
+          <tr>
+            <th scope="row">3</th>
+            <td colspan="2">Larry the Bird</td>
+            <td>@twitter</td>
+          </tr>
+        </tbody>
+      </table>
 </body>
 </html>
