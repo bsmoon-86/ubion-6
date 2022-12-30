@@ -1,0 +1,150 @@
+## sav 확장자 파일을 로드 패키지 
+install.packages('foreign')
+install.packages('readxl')
+library(foreign)
+library(readxl)
+
+welfare = read.spss(file="./csv/Koweps_hpc10_2015_beta1.sav", 
+                    to.data.frame = T)
+dim(welfare)
+
+welfare_copy = welfare
+
+## 컬럼의 이름을 변경 
+welfare_copy = rename(welfare_copy, 
+                      gender = h10_g3, 
+                      birth = h10_g4, 
+                      marriage = h10_g10, 
+                      religion = h10_g11, 
+                      income = p1002_8aq1, 
+                      code_job = h10_eco9, 
+                      code_region = h10_reg7)
+## 사용할 컬럼들만 선택하여 데이터프레임 수정
+welfare_copy  = welfare_copy %>% 
+  select(gender, birth, marriage, 
+         religion, income, code_job, code_region)
+dim(welfare_copy)
+
+## 성별 컬럼의 데이터 개수를 확인 
+table(welfare_copy$gender)
+## 결측치 확인
+table(is.na(welfare_copy$gender))
+
+## gender 컬럼의 데이터를 1은 male, 2는 female 변경
+welfare_copy$gender = 
+  ifelse(welfare_copy$gender == 1, "male", "female")
+table(welfare_copy$gender)
+
+
+## income이 0이면 수익이 존재하지 않는다. -> 결측치
+## income이 9999이면 극단치로 생각하여 결측치로 변경
+# case1
+welfare_copy$income = ifelse(
+  welfare_copy$income == 0 | welfare_copy$income == 9999, 
+  NA, 
+  welfare_copy$income)
+# case2 
+ifelse(welfare_copy$income %in% c(0, 9999), NA, welfare_copy$income)
+
+## 결측치를 확인
+table(is.na(welfare_copy$income))
+
+## 성별을 기준으로 과연 월급이 차이가 존재하는가?
+## 시각화를 하여 표현 
+
+## 결측치를 제외 
+## 성별을 기준으로 그룹화
+## 월급의 평균값을 출력
+welfare_copy %>% 
+  filter(!is.na(income)) %>% 
+  group_by(gender) %>% 
+  summarise(income_mean = mean(income)) -> gender_income
+
+## 데이터를 시각화
+ggplot(data = gender_income, 
+       aes(x = gender, y = income_mean)) + 
+  geom_col()
+
+
+## age 파생변수 생성
+## age : 현재년도 - birth
+## 나이별 월급이 어떻게되는가? 
+welfare_copy %>% 
+  mutate(age = 2022 - birth) %>% 
+  group_by(age) %>% 
+  filter(!is.na(income)) %>% 
+  summarise(income_mean = mean(income)) -> age_income
+#시각화
+ggplot(data = age_income, 
+       aes(x = age, y=income_mean)) + geom_col()
+
+## ageg 파생변수 생성
+## age 컬럼의 값이 30세 미만 'young'
+## 30이상 60미만이면 'middle'
+## 60이상이면 'old'
+## 연령대별 월급이 어떻게되는가?
+welfare_copy %>% 
+  filter(!is.na(income)) %>% 
+  mutate(age = 2022 - birth) %>% 
+  mutate(ageg = ifelse(age < 30, 'young', 
+                       ifelse( age < 60, 'middle', 'old'))) %>% 
+  group_by(ageg) %>% 
+  summarise(income_mean = mean(income)) -> ageg_income
+
+
+ggplot(data = ageg_income, 
+       aes(x = ageg, y = income_mean)) + geom_col()
+
+## 코드북 파일 로드 
+list_job= read_excel('./csv/Koweps_Codebook.xlsx', 
+                     sheet = 2)
+list_job
+
+
+##welfare_copy 와 list_job 데이터프레임을 결합
+##두 데이터프레임에 공통인 컬럼의 이름은?
+##code_job 
+## code_job을 기준으로 결합 (join 결합)
+join_data = left_join(welfare_copy, list_job, by='code_job')
+table(join_data$job)
+
+table(is.na(join_data$job))
+table(is.na(join_data$income))
+
+## 직업별 월급의 차이가 어느정도 나는가?
+## 직업군 중에 가장 월급을 많이 받는 직군은 어디인가 상위 10개
+
+## 결측치 제거 (income, job)
+## 직업별 그룹화
+## 월급의 평균값
+join_data %>% 
+  filter(!is.na(job) & !is.na(income)) %>% 
+  group_by(job) %>% 
+  summarise(income_mean = mean(income)) -> job_income
+View(job_income)
+
+ggplot(data = job_income, 
+       aes(x = reorder(job, desc(income_mean)), y = income_mean)) + 
+  geom_col() + coord_flip() -> job_income_graph
+
+job_income %>% 
+  arrange(income_mean) %>% 
+  tail(10) -> rank
+
+ggplot(data = rank, aes(x = reorder(job, income_mean), y = income_mean)) +
+  geom_col() + coord_flip()
+
+##plotly 패키지 설치
+install.packages('plotly')
+library(plotly)
+ggplotly(job_income_graph)
+
+## dygraph  --> 시계열데이터 시각화
+install.packages('dygraphs')
+library(dygraphs)
+library(xts)
+
+economics
+eco = xts(economics$unemploy, order.by = economics$date)
+eco
+dygraph(eco) %>% dyRangeSelector()

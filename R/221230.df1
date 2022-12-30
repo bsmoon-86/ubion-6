@@ -1,0 +1,156 @@
+## 결측치에 대한 계산 
+## 결측치는 연산이 되지 않는다. 
+## 필터를 걸게되면 무조건 출력
+c1 = c(1,2,NA,NA,5)
+c2 = c(1,2,3,4,5)
+c3 = c(NA, 2, 3, 4, 5)
+df = data.frame(c1, c2, c3)
+df
+## 결측치가 존재하는지 체크 
+is.na(df)
+table(is.na(df))
+is.na(df$c1)
+
+## 결측치를 제거하는 방법 
+library(dplyr)
+df %>% filter(is.na(c1))
+df %>%  filter(!is.na(c1))
+
+na.omit(df)
+
+## 결측치를 제외하고 연산
+mean(df$c1)
+mean(df$c1, na.rm = T)
+
+exam = read.csv("./csv/csv_exam.csv")
+exam
+
+exam[c(5,7), 3] = NA
+exam
+
+table(is.na(exam))
+dim(exam)
+str(exam)
+
+## 수학 성적 평균 출력(NA)
+## 결측치인 값을 수학 성적의 평균으로 대체
+## ifelse(조건식, 참일때 값, 거짓일때 값)
+## 조건식을 결측치인 경우, 결측치를 제외한 수학 평균, 자기 자신의 값
+
+exam$math = ifelse(is.na(exam$math), mean(exam$math, na.rm=T), exam$math)
+
+## 이상치 제거 
+outlier = data.frame(gender= c(1,2,1,2,3), 
+                     score = c(80, 90,70,80,50))
+outlier
+table(outlier$gender)
+
+# gerder 3이라는 수치는 이상치
+# 성별이 3인 데이터를 결측치로 변경 
+# 결측치 제거
+ifelse(outlier$gender == 3, NA, outlier$gender) -> outlier$gender
+na.omit(outlier)
+
+## 성별이 1,2가 아닌경우 NA 
+ifelse(outlier$gender %in% c(1,2), outlier$gender, NA)
+ifelse(outlier$gender == 1 | outlier$gender == 2 , outlier$gender, NA)
+
+
+## 결측치 제거 
+## 성별로 그룹화 
+## 점수의 평균 값 
+## dplyr 패키지를 이용하여
+
+outlier %>% 
+  filter(!is.na(gender)) %>% 
+  group_by(gender) %>% 
+  summarise(score_mean = mean(score))
+
+library(ggplot2)  
+mpg
+
+#극단치 확인(시각화)
+boxplot(mpg$hwy)
+
+#극단치 확인(수치화)
+boxplot(mpg$hwy)$stats
+
+
+## 극단치 37초과이거나 12의 미만인 경우 결측치로 대체
+## 결측치를 제거 
+## manufacturer 기준으로 그룹화 
+## hwy의 평균 값을 출력
+
+mpg$hwy = ifelse(
+  mpg$hwy > 37 | mpg$hwy < 12, 
+  NA, 
+  mpg$hwy
+)
+table(is.na(mpg$hwy))
+
+## 결측치를 제거 -> 제조사별 그룹화 -> 고속도로연비의 평균
+mpg %>% 
+  filter(!is.na(hwy)) %>% 
+  group_by(manufacturer) %>% 
+  summarise(mean_hwy = mean(hwy)) %>% 
+  arrange(desc(mean_hwy)) %>% 
+  head(5)
+
+mpg = ggplot2::mpg
+
+## 파생변수 추가 
+## total -> (도심연비 + 고속도로 연비) / 2
+## 파생변수 추가 
+## test -> total의 값이 30이 이상이면 'A'
+## 20이상 30미만 'B'
+## 그 외에는 'C'
+
+#total 파생변수 생성
+# case1
+mpg$total = (mpg$cty + mpg$hwy) /2
+# case2
+mpg = mpg %>% 
+  mutate(total = (cty + hwy) / 2)
+
+## test 파생변수 생성
+mpg$test = ifelse(
+  mpg$total >= 30, 
+  'A', 
+  (ifelse(mpg$total >= 20, 
+          'B', 
+          'C')
+   )
+  )
+table(mpg$test)
+
+## 간단하게 시각화
+qplot(mpg$test)
+
+
+## ggplot2 midwest 라는 샘플 로드 
+midwest
+View(midwest)
+
+## 컬럼의 이름 변경 
+## rename(데이터프레임명, 새 컬럼의 이름 = 변경이 될 컬럼의 이름)
+## popasian -> asian , poptotal -> total
+rename(midwest, asian = popasian, total = poptotal) -> midwest
+
+##파생변수 ratio 
+##전체 인구수 대비 아시아의 인구 수 -> 백분율 표시 
+## asian / total * 100 -> ratio
+midwest %>% 
+  mutate(ratio = asian / total * 100) %>% 
+  select(total, asian, ratio)
+
+midwest = midwest %>% 
+  mutate(ratio = asian / total * 100)
+
+## 파생변수 생성
+## group은 ratio의 평균값보다 ratio이 값이 초과면 'large'
+## 이하면 'small'
+
+midwest %>% 
+  mutate(group = ifelse(ratio > mean(ratio), 'large', 'small')) ->midwest
+table(midwest$group)
+qplot(midwest$group)
